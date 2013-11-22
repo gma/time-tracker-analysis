@@ -38,12 +38,6 @@ last_day()
     echo "SELECT MAX(day) FROM logs WHERE customer = '$customer'" | execute
 }
 
-offset_for_date()
-{
-    local date="$1"
-    date -j -f "%Y-%m-%d" $date "+%s"
-}
-
 daily_hours_during_client_job()
 {
     local customer="$1"
