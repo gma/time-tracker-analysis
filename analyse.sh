@@ -6,7 +6,7 @@ OUTPUT="`pwd`/output"
 DATABASE="time_tracker_analysis"
 
 MY_COMPANY="Effectif"
-MY_BOOTSTRAPPED_PROJECTS="'Agile Planner', 'Check Satisfacation', 'Quiz the Market'"
+MY_BOOTSTRAPPED_PROJECTS="'Agile Planner', 'Check Satisfacation', 'Quiz the Market', 'Nichelator', 'Project Make Money', 'Wiki Search', 'Challenge 2010'"
 
 ## Functions
 
@@ -49,16 +49,17 @@ daily_hours_during_client_job()
     local customer="$1"
     execute <<EOF
     COPY
-       (SELECT DATE(days.timestamp), customer, project, sum(hours) \
+       (SELECT DATE(days.timestamp), customer, sum(hours) \
           FROM (
               SELECT generate_series(date '$(first_day "$CUSTOMER")',
                                      date '$(last_day "$CUSTOMER")',
                                      '1 day'
           ) AS timestamp) days
-          JOIN logs ON logs.day = DATE(timestamp)
+     LEFT JOIN logs ON logs.day = DATE(timestamp)
          WHERE customer = '$customer'
             OR project IN ($MY_BOOTSTRAPPED_PROJECTS)
-      GROUP BY DATE(days.timestamp), customer, project)
+      GROUP BY DATE(days.timestamp), customer, project
+      ORDER BY DATE(days.timestamp) ASC)
     TO '$OUTPUT/$customer-time-entries.csv' WITH csv HEADER DELIMITER ','
 EOF
 }
