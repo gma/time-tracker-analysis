@@ -47,20 +47,21 @@ offset_for_date()
 daily_hours_during_client_job()
 {
     local customer="$1"
+    local basename=$(echo $customer | tr A-Z a-z | sed 's/ /-/g')
     execute <<EOF
-    COPY
-       (SELECT DATE(days.timestamp), customer, sum(hours) \
-          FROM (
-              SELECT generate_series(date '$(first_day "$CUSTOMER")',
-                                     date '$(last_day "$CUSTOMER")',
-                                     '1 day'
-          ) AS timestamp) days
-     LEFT JOIN logs ON logs.day = DATE(timestamp)
-         WHERE customer = '$customer'
-            OR project IN ($MY_BOOTSTRAPPED_PROJECTS)
-      GROUP BY DATE(days.timestamp), customer, project
-      ORDER BY DATE(days.timestamp) ASC)
-    TO '$OUTPUT/$customer-time-entries.csv' WITH csv HEADER DELIMITER ','
+        COPY
+           (SELECT DATE(days.timestamp), customer, sum(hours)
+              FROM (
+                  SELECT generate_series(date '$(first_day "$CUSTOMER")',
+                                         date '$(last_day "$CUSTOMER")',
+                                         '1 day'
+              ) AS timestamp) days
+   FULL OUTER JOIN logs ON DATE(timestamp) = logs.day
+          GROUP BY DATE(days.timestamp), customer
+          HAVING customer = '$customer' OR sum(hours) IS NULL
+          ORDER BY DATE(days.timestamp) ASC
+          )
+        TO '$OUTPUT/$basename-time-entries.csv' WITH csv DELIMITER ','
 EOF
 }
 
