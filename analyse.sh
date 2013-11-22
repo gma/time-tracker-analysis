@@ -18,31 +18,32 @@ usage()
 
 execute()
 {
-    psql -d $DATABASE -A -t
+    psql -d $DATABASE -A -t -c $1
 }
 
 customers()
 {
-    echo "SELECT DISTINCT customer FROM logs WHERE customer NOT IN ('', 'Effectif')" | execute
+    execute "SELECT DISTINCT customer FROM logs WHERE customer NOT IN ('', 'Effectif')"
 }
 
 first_day()
 {
     local customer="$1"
-    echo "SELECT MIN(day) FROM logs WHERE customer = '$customer'" | execute
+    execute "SELECT MIN(day) FROM logs WHERE customer = '$customer'"
 }
 
 last_day()
 {
     local customer="$1"
-    echo "SELECT MAX(day) FROM logs WHERE customer = '$customer'" | execute
+    execute "SELECT MAX(day) FROM logs WHERE customer = '$customer'"
 }
 
 daily_hours_during_client_job()
 {
     local customer="$1"
     local basename=$(echo $customer | tr A-Z a-z | sed 's/ /-/g')
-    execute <<EOF
+    local sql
+    read -r -d '' sql <<EOF
         COPY
            (SELECT DATE(days.timestamp), customer, sum(hours)
               FROM (
@@ -57,6 +58,7 @@ daily_hours_during_client_job()
           )
         TO '$OUTPUT/$basename-time-entries.csv' WITH csv DELIMITER ','
 EOF
+    execute "$(echo $sql)"
 }
 
 ## Main program
