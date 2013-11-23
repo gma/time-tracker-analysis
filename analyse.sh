@@ -6,7 +6,15 @@ OUTPUT="`pwd`/output"
 DATABASE="time_tracker_analysis"
 
 MY_COMPANY="Effectif"
-MY_BOOTSTRAPPED_PROJECTS="'Agile Planner', 'Check Satisfacation', 'Quiz the Market', 'Nichelator', 'Project Make Money', 'Wiki Search', 'Challenge 2010'"
+MY_BOOTSTRAPPED_PROJECTS="
+    'Agile Planner',
+    'Check Satisfacation',
+    'Quiz the Market',
+    'Nichelator',
+    'Project Make Money',
+    'Wiki Search',
+    'Challenge 2010'
+"
 
 ## Functions
 
